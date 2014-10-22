@@ -646,6 +646,27 @@ namespace pycppad {
 		CppAD::Independent(a_x);
 		return vec2array(a_x);
 	}
+	array IndependentDiag(array& x_array, int level, int opIndex)
+	{	PYCPPAD_ASSERT(
+			level == 1 || level == 2,
+			"independent: level argument must be 1 or 2."
+		);
+		if( level == 1 )
+		{
+			double_vec      x(x_array);
+			AD_double_vec a_x(x.size() );
+			for(size_t j = 0; j < x.size(); j++)
+				a_x[j] = x[j];
+			CppAD::IndependentDiag(a_x, opIndex);
+			return vec2array(a_x);
+		}
+		AD_double_vec      x(x_array);
+		AD_AD_double_vec a_x(x.size() );
+		for(size_t j = 0; j < x.size(); j++)
+			a_x[j] = x[j];
+		CppAD::IndependentDiag(a_x, opIndex);
+		return vec2array(a_x);
+	}
 	// -------------------------------------------------------------
 	double double_(const AD_double& x)
 	{	return Value(x); }
@@ -694,6 +715,7 @@ BOOST_PYTHON_MODULE(cppad_)
 	array::set_module_and_type("numpy", "ndarray");
 	// --------------------------------------------------------------------
 	def("independent", pycppad::Independent);
+	def("independentdiag", pycppad::IndependentDiag);
 	def("float_",     pycppad::double_);
 	def("a_float_",   pycppad::AD_double_);
 	// documented in adfun.py

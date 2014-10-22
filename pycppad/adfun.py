@@ -200,6 +200,49 @@ def independent(x) :
   msg = 'only implemented where x[j] is int, float, or a_float'
   raise NotImplementedError(msg)
 
+def independentdiag(x, opIndex) :
+  """
+  a_x = independent(x): create independent variable vector a_x, equal to x,
+  and start recording operations that use the class corresponding to ad( x[0] ).
+  """
+  #
+  # It would be better faster if all this type checking were done in the C++
+  #
+  if not isinstance(x, numpy.ndarray) :
+    raise NotImplementedError('independent(x): x is not of type numpy.array')
+  #
+  x0 = x[0]
+  if isinstance(x0, int) :
+    for j in range( len(x) ) :
+      if not isinstance(x[j], int) :
+        other = 'x[' + str(j) + '] is ' + type(x[j]).__name__
+        msg   = 'independent(x): mixed types x[0] is int and ' + other
+        raise NotImplementedError(msg)
+    x = numpy.array(x, dtype=int)       # incase dtype of x is object
+    return cppad_.independentdiag(x, 1, opIndex)     # level = 1
+  #
+  if isinstance(x0, float) :
+    for j in range( len(x) ) :
+      if not isinstance(x[j], float) :
+        other = 'x[' + str(j) + '] is ' + type(x[j]).__name__
+        msg   = 'independent(x): mixed types x[0] is float and ' + other
+        raise NotImplementedError(msg)
+    x = numpy.array(x, dtype=float)     # incase dtype of x is object
+    return cppad_.independentdiag(x, 1, opIndex)     # level = 1
+  #
+  if isinstance(x0, cppad_.a_float) :
+    for j in range( len(x) ) :
+      if not isinstance(x[j], cppad_.a_float) :
+        other = 'x[' + str(j) + '] is ' + type(x[j]).__name__
+        msg   = 'independent(x): mixed types x[0] is a_float and ' + other
+        raise NotImplementedError(msg)
+    return cppad_.independentdiag(x, 2, opIndex)     # level = 2
+  #
+  msg = 'independent(x): x[0] has type' + type(x0).__name__ + '\n'
+  msg = 'only implemented where x[j] is int, float, or a_float'
+  raise NotImplementedError(msg)
+
+
 class adfun_float(cppad_.adfun_float) :
   """
   Create a level zero function object (evaluates using floats).
